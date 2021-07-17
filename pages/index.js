@@ -25,15 +25,51 @@ const ProfileSideBar = (props) => {
   )
 }
 
+function ProfileRelationsBox(props) {
+  return (
+    <ProfileRelationsBoxWrapper>
+      <h2 className="smallTitle">
+        {props.title} ({props.items.length})
+      </h2>
+
+      <ul>
+        {/* {props.items.map((item) => {
+          return (
+            <li key={item}>
+              <a href={`users/${item}`}>
+                <img src={`https://github.com/${item}.png`} />
+                <span>{item}</span>
+              </a>
+            </li>
+          )
+        })} */}
+      </ul>
+    </ProfileRelationsBoxWrapper>
+  )
+}
+
 export default function Home() {
-  React.useState()
   const usuarioGithub = 'cfasilva'
+
   const pessoasFavoritas = ['tiago100h', 'aurilio', 'badaroz']
+
   const [comunidadesFavoritas, setComunidadeFavoritas] = React.useState([{
     id: new Date().toISOString(),
     title: 'Eu odeio acordar cedo',
     image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg',
   }])
+
+  const [seguidoresFavoritos, setSeguidoresFavoritos] = React.useState([])
+
+  React.useEffect(function() {
+    fetch('https://api.github.com/users/cfasilva/followers')
+      .then(function (response) {
+        return response.json()
+      })
+      .then(function (responseConvert) {
+        setSeguidoresFavoritos(responseConvert)
+      })
+  }, [])
 
   return (
     <>
@@ -82,24 +118,8 @@ export default function Home() {
         </div>
 
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
-          <ProfileRelationsBoxWrapper>
-            <h2 className="smallTitle">
-              Pessoas ({pessoasFavoritas.length})
-            </h2>
-
-            <ul>
-              {pessoasFavoritas.map((item) => {
-                return (
-                  <li key={item}>
-                    <a href={`users/${item}`}>
-                      <img src={`https://github.com/${item}.png`} />
-                      <span>{item}</span>
-                    </a>
-                  </li>
-                )
-              })}
-            </ul>
-          </ProfileRelationsBoxWrapper>
+          <ProfileRelationsBox title="Seguidores" items={seguidoresFavoritos} />
+          <ProfileRelationsBox title="Pessoas" items={pessoasFavoritas} />
 
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">
