@@ -1,4 +1,6 @@
 import React from 'react'
+import nookies from 'nookies'
+import jwt from 'jsonwebtoken'
 import MainGrid from '../src/components/MainGrid'
 import Box from '../src/components/Box'
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons'
@@ -47,9 +49,9 @@ function ProfileRelationsBox(props) {
   )
 }
 
-export default function Home() {
-  const usuarioGithub = 'cfasilva'
-  const pessoasFavoritas = ['tiago100h', 'aurilio', 'badaroz']
+export default function Home(props) {
+  const usuarioGithub = props.githubUser
+  const pessoasFavoritas = ['tiago100h', 'aurilio', 'badaroz', 'jonathan-yoshikawa']
   const [seguidoresFavoritos, setSeguidoresFavoritos] = React.useState([])
   const [comunidadesFavoritas, setComunidadeFavoritas] = React.useState([])
 
@@ -135,10 +137,10 @@ export default function Home() {
                 },
                 body: JSON.stringify(comunidade),
               })
-                .then(async (response) => {
-                  const dados = await response.json()
-                  console.log(dados.record)
-                  setComunidadeFavoritas([...comunidadesFavoritas, dados.record])
+                .then(async response => {
+                  const { record } = await response.json()
+                  console.log(record)
+                  setComunidadeFavoritas([...comunidadesFavoritas, record])
                 })
                 .catch((error) => {
                   console.log(error)
@@ -184,4 +186,34 @@ export default function Home() {
       </MainGrid>
     </>
   )
+}
+
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context)
+  const token = cookies.USER_TOKEN;
+  const { isAuthenticated } = await fetch('https://alurakut.vercel.app/api/auth', {
+    headers: {
+      Authorization: token
+    }
+  })
+    .then(res => res.json())
+
+  console.log('Autenticado: ', isAuthenticated)
+
+  if (!isAuthenticated) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      }
+    }
+  }
+
+  const { githubUser } = jwt.decode(token);
+
+  return {
+    props: {
+      githubUser
+    },
+  }
 }
